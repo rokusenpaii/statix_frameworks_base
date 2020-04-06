@@ -105,6 +105,7 @@ public class DozeSensors {
     @VisibleForTesting
     protected TriggerSensor[] mTriggerSensors;
     private final ProximitySensor mProximitySensor;
+    private final boolean mProxSensorSupported;
 
     // Sensor callbacks
     private final Callback mSensorCallback; // receives callbacks on registered sensor events
@@ -168,6 +169,7 @@ public class DozeSensors {
         mProximitySensor.setTag(TAG);
         mSelectivelyRegisterProxSensors = dozeParameters.getSelectivelyRegisterSensorsUsingProx();
         mListeningProxSensors = !mSelectivelyRegisterProxSensors;
+        mProxSensorSupported = dozeParameters.getDozeSupportsProxSensor();
         mScreenOffUdfpsEnabled =
                 config.screenOffUdfpsEnabled(KeyguardUpdateMonitor.getCurrentUser());
         mDevicePostureController = devicePostureController;
@@ -280,6 +282,7 @@ public class DozeSensors {
                         false /* requiresAod */
                 ),
         };
+        if (!mProxSensorSupported) return;
         setProxListening(false);  // Don't immediately start listening when we register.
         mProximitySensor.register(
                 proximityEvent -> {
@@ -501,6 +504,7 @@ public class DozeSensors {
         for (TriggerSensor s : mTriggerSensors) {
             idpw.println("Sensor: " + s.toString());
         }
+        if (!mProxSensorSupported) return;
         idpw.println("ProxSensor: " + mProximitySensor.toString());
     }
 
@@ -508,7 +512,7 @@ public class DozeSensors {
      * @return true if prox is currently near, false if far or null if unknown.
      */
     public Boolean isProximityCurrentlyNear() {
-        return mProximitySensor.isNear();
+        return mProxSensorSupported ? mProximitySensor.isNear() : null;
     }
 
     @VisibleForTesting
