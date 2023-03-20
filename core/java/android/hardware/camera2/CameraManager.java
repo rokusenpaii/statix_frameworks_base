@@ -114,7 +114,7 @@ public final class CameraManager {
      */
     @ChangeId
     @Overridable
-    @EnabledSince(targetSdkVersion = android.os.Build.VERSION_CODES.BASE)
+    @EnabledSince(targetSdkVersion = android.os.Build.VERSION_CODES.TIRAMISU)
     public static final long OVERRIDE_CAMERA_LANDSCAPE_TO_PORTRAIT = 250678880L;
 
     /**
