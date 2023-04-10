@@ -17,6 +17,9 @@
     <!-- Fingerprint from stock ROM -->
     <string name="config_stockFingerprint" translatable="false"></string>
 
+    <!-- Whether to spoof device as Pixel XL for Google Photos -->
+    <bool name="config_spoofGooglePhotos">true</bool>
+
     <!-- The list of components which should be automatically disabled for a specific device.
       Note: this MUST not be used to randomly disable components, ask for approval first! -->
      <string-array name="config_deviceDisabledComponents" translatable="false">
