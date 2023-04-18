@@ -30,7 +30,6 @@ import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
-import android.hardware.camera2.CameraManager;
 import android.media.AudioAttributes;
 import android.media.IAudioService;
 import android.os.Build;
@@ -287,10 +286,7 @@ public class Camera {
      *    low-level failure).
      */
     public static void getCameraInfo(int cameraId, CameraInfo cameraInfo) {
-        boolean overrideToPortrait = CameraManager.shouldOverrideToPortrait(
-                ActivityThread.currentApplication().getApplicationContext());
-
-        _getCameraInfo(cameraId, overrideToPortrait, cameraInfo);
+        _getCameraInfo(cameraId, cameraInfo);
         IBinder b = ServiceManager.getService(Context.AUDIO_SERVICE);
         IAudioService audioService = IAudioService.Stub.asInterface(b);
         try {
@@ -303,8 +299,7 @@ public class Camera {
             Log.e(TAG, "Audio service is unavailable for queries");
         }
     }
-    private native static void _getCameraInfo(int cameraId, boolean overrideToPortrait,
-            CameraInfo cameraInfo);
+    private native static void _getCameraInfo(int cameraId, CameraInfo cameraInfo);
 
     /**
      * Information about a camera
@@ -485,11 +480,9 @@ public class Camera {
             mEventHandler = null;
         }
 
-        boolean overrideToPortrait = CameraManager.shouldOverrideToPortrait(
-                ActivityThread.currentApplication().getApplicationContext());
         boolean forceSlowJpegMode = shouldForceSlowJpegMode();
         return native_setup(new WeakReference<Camera>(this), cameraId,
-                ActivityThread.currentOpPackageName(), overrideToPortrait, forceSlowJpegMode);
+                ActivityThread.currentOpPackageName(), forceSlowJpegMode);
     }
 
     private boolean shouldForceSlowJpegMode() {
@@ -573,7 +566,7 @@ public class Camera {
 
     @UnsupportedAppUsage
     private native int native_setup(Object cameraThis, int cameraId, String packageName,
-            boolean overrideToPortrait, boolean forceSlowJpegMode);
+            boolean forceSlowJpegMode);
 
     private native final void native_release();
 
