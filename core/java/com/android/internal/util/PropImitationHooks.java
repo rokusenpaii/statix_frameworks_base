@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class PropImitationHooks {
 
@@ -60,6 +61,17 @@ public class PropImitationHooks {
         "FINGERPRINT", "google/marlin/marlin:10/QP1A.191005.007.A3/5972272:user/release-keys"
     );
 
+    private static final Set<String> sFeatureBlacklist = Set.of(
+        "PIXEL_2017_PRELOAD",
+        "PIXEL_2018_PRELOAD",
+        "PIXEL_2019_MIDYEAR_PRELOAD",
+        "PIXEL_2019_PRELOAD",
+        "PIXEL_2020_EXPERIENCE",
+        "PIXEL_2020_MIDYEAR_EXPERIENCE",
+        "PIXEL_2021_EXPERIENCE",
+        "PIXEL_2021_MIDYEAR_EXPERIENCE"
+    );
+
     private static final String PACKAGE_SUBSCRIPTION_RED = "com.google.android.apps.subscriptions.red";
     private static final String PACKAGE_TURBO = "com.google.android.apps.turbo";
     private static final String PACKAGE_VELVET = "com.google.android.googlequicksearchbox";
@@ -77,6 +89,7 @@ public class PropImitationHooks {
 
     private static volatile boolean sIsGms = false;
     private static volatile boolean sIsFinsky = false;
+    private static volatile boolean sIsPhotos = false;
 
     public static void setProps(Application app) {
         final String packageName = app.getPackageName();
@@ -88,6 +101,7 @@ public class PropImitationHooks {
 
         sIsGms = packageName.equals(PACKAGE_GMS) && processName.equals(PROCESS_GMS_UNSTABLE);
         sIsFinsky = packageName.equals(PACKAGE_FINSKY);
+        sIsPhotos = sSpoofPhotos && packageName.equals(PACKAGE_GPHOTOS);
 
         if (sIsGms) {
             dlog("Setting Pixel XL fingerprint for: " + packageName);
@@ -98,8 +112,7 @@ public class PropImitationHooks {
         } else if (!sStockFp.isEmpty() && packageName.equals(PACKAGE_ARCORE)) {
             dlog("Setting stock fingerprint for: " + packageName);
             setPropValue("FINGERPRINT", sStockFp);
-        } else if ((sSpoofPhotos && packageName.equals(PACKAGE_GPHOTOS))
-                || packageName.equals(PACKAGE_SNAPCHAT)) {
+        } else if (sIsPhotos || packageName.equals(PACKAGE_SNAPCHAT)) {
             dlog("Spoofing Pixel XL for: " + packageName);
             sPixelXLProps.forEach((PropImitationHooks::setPropValue));
         } else if (packageName.equals(PACKAGE_SUBSCRIPTION_RED) || packageName.equals(PACKAGE_TURBO)
@@ -155,6 +168,14 @@ public class PropImitationHooks {
             dlog("Blocked key attestation sIsGms=" + sIsGms + " sIsFinsky=" + sIsFinsky);
             throw new UnsupportedOperationException();
         }
+    }
+
+    public static boolean hasSystemFeature(String name, boolean def) {
+        if (sIsPhotos && def && sFeatureBlacklist.stream().anyMatch(name::contains)) {
+            dlog("Blocked system feature " + name + " for Google Photos");
+            return false;
+        }
+        return def;
     }
 
     public static void dlog(String msg) {
